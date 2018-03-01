@@ -1,0 +1,3 @@
+- hosts: litcli01.litware.com
+  tasks:
+    - script: C:\\temp\\ansibletest.ps1
