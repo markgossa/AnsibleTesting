@@ -1,0 +1,18 @@
+- hosts: litcli01.litware.com
+  tasks:
+    - name: InstallChocolatey
+    win_psmodule: 
+      name: cChoco
+      state: present
+    
+    - name: InstallChoco
+    win_dsc:
+      resource_name: cChocoInstaller
+      name: InstallChoco
+      InstallDir: "C:\Choco"
+    
+    - name: InstallGoogleChrome
+    win_dsc:
+      resource_name: cChocoPackageInstaller
+      name: googlechrome
+      ensure: present
