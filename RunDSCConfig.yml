@@ -8,7 +8,6 @@
     - name: InstallChoco
       win_dsc:
         resource_name: cChocoInstaller
-        name: InstallChoco
         InstallDir: "C:\\Choco"
     
     - name: InstallGoogleChrome
