@@ -6,12 +6,12 @@
         state: present
     
     - name: InstallChoco
-    win_dsc:
+      win_dsc:
         resource_name: cChocoInstaller
         InstallDir: "C:\\Choco"
     
     - name: InstallGoogleChrome
-    win_dsc:
+      win_dsc:
         resource_name: cChocoPackageInstaller
         name: googlechrome
         ensure: present
