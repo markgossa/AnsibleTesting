@@ -15,3 +15,11 @@
         resource_name: cChocoPackageInstaller
         name: googlechrome
         ensure: present
+
+    - name: InstallGit
+      win_chocolatey:
+        name: '{{ item }}'
+        ensure: present
+      with_items: 
+        - notepadplusplus.install
+        - putty.install
