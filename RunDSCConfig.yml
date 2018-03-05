@@ -16,7 +16,7 @@
         name: googlechrome
         ensure: present
 
-    - name: InstallGit
+    - name: InstallApplications
       win_chocolatey:
         name: '{{ item }}'
         ensure: present
