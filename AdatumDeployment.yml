@@ -43,7 +43,7 @@
       win_dsc:
         resource_name: xADDomain
         DomainName: '{{ domain_name }}'
-        SafeModeAdministratorPassword: '{{ safe_mode_password }}'
+        SafemodeAdministratorPassword: '{{ safe_mode_password }}'
         DomainAdministratorCredential_username: '{{ DomainAdministratorCredential_username }}'
         DomainAdministratorCredential_password: '{{ DomainAdministratorCredential_password }}'
       register: PromoteToDomainController
