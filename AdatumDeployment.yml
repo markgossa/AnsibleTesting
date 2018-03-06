@@ -1,0 +1,30 @@
+- hosts: 10.0.0.250
+  tasks:
+    - name: 
+      win_psmodule:
+        name: '{{ items}}'
+        state: present
+      with_items:
+        - xActiveDirectory
+        - xComputerManagement
+        - xNetworking
+
+    - name: Set hostname
+      win_dsc: 
+        resource_name: xComputer
+        name: adatdc01
+
+    - name: Set IP address
+      win_dsc:
+        resource_name: xIPAddress
+        IPAddress: 10.0.0.211
+        AddressFamily: IPV4
+        InterfaceAlias: Chicago
+
+    - name: Set IP address
+      win_dsc:
+        resource_name: xDnsServerAddress
+        AddressFamily: IPV4
+        InterfaceAlias: Chicago
+        
+
