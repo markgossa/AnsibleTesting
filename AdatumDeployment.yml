@@ -10,10 +10,16 @@
         - xNetworking
         - xDnsServer
 
+    - name: Set WinRM service to automatic
+      win_dsc:
+        resource_name: Service
+        Name: WinRM
+        StartupType: Automatic
+
     - name: Set hostname
       win_dsc: 
         resource_name: xComputer
-        name: adatdc01
+        name: '{{ hostname }}'
       register: SetHostname
 
     - name: Reboot 1
@@ -27,11 +33,10 @@
         InterfaceAlias: '{{ interface_alias }}'
         Address: 127.0.0.1
 
-    - name: Set WinRM service to automatic
-      win_dsc:
-        resource_name: Service
-        Name: WinRM
-        StartupType: Automatic
+    - name: Install Windows Features
+      win_feature:
+        name: AD-Domain-Services,DNS
+        state: present
 
     - name: Promote to domain controller
       win_domain_controller: 
