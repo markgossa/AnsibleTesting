@@ -9,6 +9,7 @@
         - xComputerManagement
         - xNetworking
         - xDnsServer
+        - xActiveDirectory
 
     - name: Set WinRM service to automatic
       win_dsc:
@@ -39,12 +40,10 @@
         state: present
 
     - name: Promote to domain controller
-      win_domain_controller: 
-        dns_domain_name: '{{ domain_name }}'
-        state: domain_controller
-        safe_mode_password: '{{ safe_mode_password }}'
-        domain_admin_user: '{{ domain_admin_user }}'
-        domain_admin_password: '{{ domain_admin_password }}'
+      win_dsc:
+        resource_name: xADDomain
+        DomainName: '{{ domain_name }}'
+        SafeModeAdministratorPassword: '{{ safe_mode_password }}'
       register: PromoteToDomainController
 
     - name: Reboot 2
