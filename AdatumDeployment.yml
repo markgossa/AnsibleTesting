@@ -13,7 +13,7 @@
       win_dsc: 
         resource_name: xComputer
         name: adatdc01
-        register: SetHostname
+      register: SetHostname
 
     - name: Reboot 1
       win_reboot:
