@@ -2,9 +2,9 @@
   tasks:
     - name: 
       win_psmodule:
-        name: '{{ items}}'
+        name: '{{ item }}'
         state: present
-      with_items:
+      with_item:
         - xActiveDirectory
         - xComputerManagement
         - xNetworking
