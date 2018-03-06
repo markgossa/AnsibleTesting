@@ -14,14 +14,7 @@
         resource_name: xComputer
         name: adatdc01
 
-    - name: Set IP address
-      win_dsc:
-        resource_name: xIPAddress
-        IPAddress: 10.0.0.211
-        AddressFamily: IPV4
-        InterfaceAlias: Chicago
-
-    - name: Set IP address
+    - name: Set DNS server address
       win_dsc:
         resource_name: xDnsServerAddress
         AddressFamily: IPV4
