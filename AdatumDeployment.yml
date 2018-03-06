@@ -36,4 +36,4 @@
       win_domain_controller: 
         dns_domain_name: adatum.com
         state: domain_controller
-        safe_mode_password: '{{ safe_mode_password }}'
+        safe_mode_password: '{{ safe_mode_password_var }}'
