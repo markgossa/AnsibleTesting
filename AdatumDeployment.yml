@@ -19,7 +19,6 @@
       win_reboot:
       when: SetHostname.reboot_required == True
 
-
     - name: Set DNS server address
       win_dsc:
         resource_name: xDnsServerAddress
@@ -32,3 +31,9 @@
         resource_name: Service
         Name: WinRM
         StartupType: Automatic
+
+    - name: Promote to domain controller
+      win_domain_controller: 
+        dns_domain_name: adatum.com
+        state: domain_controller
+        safe_mode_password: '{{ safe_mode_password }}'
