@@ -1,6 +1,6 @@
 - hosts: 10.0.0.211
   tasks:
-    - name: 
+    - name: Install PowerShell modules
       win_psmodule:
         name: '{{ item }}'
         state: present
@@ -13,6 +13,12 @@
       win_dsc: 
         resource_name: xComputer
         name: adatdc01
+        register: SetHostname
+
+    - name: Reboot 1
+      win_reboot:
+      when: SetHostname.reboot_required == True
+
 
     - name: Set DNS server address
       win_dsc:
@@ -20,3 +26,9 @@
         AddressFamily: IPV4
         InterfaceAlias: Chicago
         Address: 127.0.0.1
+
+    - name: Set WinRM service to automatic
+      win_dsc:
+        resource_name: Service
+        Name: WinRM
+        StartupType: Automatic
