@@ -26,5 +26,4 @@
         resource_name: xDnsServerAddress
         AddressFamily: IPV4
         InterfaceAlias: Chicago
-        
-
+        Address: 127.0.0.1
