@@ -1,4 +1,5 @@
-- hosts: 10.0.0.211
+- hosts: '{{ dc1_ip }}'
+  gather_facts: no
   tasks:
     - name: Install PowerShell modules
       win_psmodule:
@@ -20,7 +21,7 @@
     - name: Set hostname
       win_dsc: 
         resource_name: xComputer
-        name: '{{ hostname }}'
+        name: '{{ dc1_hostname }}'
       register: SetHostname
 
     - name: Reboot 1
@@ -36,24 +37,146 @@
 
     - name: Install Windows Features
       win_feature:
-        name: AD-Domain-Services,DNS
+        name: AD-Domain-Services,RSAT-ADDS-Tools,DNS
         state: present
 
     - name: Promote to domain controller
       win_dsc:
         resource_name: xADDomain
         DomainName: '{{ domain_name }}'
-        SafemodeAdministratorPassword: '{{ safe_mode_password }}'
+        SafemodeAdministratorPassword_username: '{{ SafemodeAdministratorPassword_username }}'
+        SafemodeAdministratorPassword_password: '{{ SafemodeAdministratorPassword_password }}'
         DomainAdministratorCredential_username: '{{ DomainAdministratorCredential_username }}'
         DomainAdministratorCredential_password: '{{ DomainAdministratorCredential_password }}'
       register: PromoteToDomainController
 
-    - name: Reboot 2
-      win_reboot:
+    - name: Restart DC
+      vmware_guest:
+        name: '{{ dc1_hostname }}'
+        folder: ha-datacenter/vm
+        esxi_hostname: '{{ esxi_hostname }}'
+        hostname: '{{ esxi_hostname }}'
+        username: '{{ esxi_username }}'
+        password: '{{ esxi_password }}'
+        validate_certs: false
+        force: yes
+        state: rebootguest
+      delegate_to: localhost
       when: PromoteToDomainController.reboot_required == True
 
-    - name: Set DNS forwarders
+    - name: Wait for reboot
+      wait_for_connection:
+        delay: 120
+        timeout: 600
+      when: PromoteToDomainController.reboot_required == True
+
+    - name: DNS A records
       win_dsc:
-        resource_name: xDnsServerForwarder
-        IsSingleInstance: Yes 
-        IPAddress: '{{ dns_forwarder_address }}'
+        resource_name: xDnsARecord
+        Name: www
+        Target: '{{ item }}'
+        Zone: '{{ domain_name }}'
+      with_items:
+        - '{{ web1_ip }}'
+        - '{{ web2_ip }}'
+
+- hosts: '{{ web1_ip }}'
+  gather_facts: no
+  tasks:
+    - name: Install PowerShell modules
+      win_psmodule:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - xComputerManagement
+        - xNetworking
+
+    - name: Set WinRM service to automatic
+      win_dsc:
+        resource_name: Service
+        Name: WinRM
+        StartupType: Automatic
+    - name: Set DNS server address
+      win_dsc:
+        resource_name: xDnsServerAddress
+        AddressFamily: IPV4
+        InterfaceAlias: '{{ interface_alias }}'
+        Address: '{{ web1_dns_servers }}'        
+
+    - name: Set hostname
+      win_dsc: 
+        resource_name: xComputer
+        Name: '{{ web1_hostname }}'
+        DomainName: '{{ domain_name }}'
+        Credential_username: '{{ DomainAdministratorCredential_username }}'
+        Credential_password: '{{ DomainAdministratorCredential_password }}'
+      register: SetHostname
+
+    - name: Reboot 1
+      win_reboot:
+      when: SetHostname.reboot_required == True
+
+    - name: Install Windows Features
+      win_feature:
+        name: Web-Server, Web-Mgmt-Console
+        state: Present
+
+    - name: Create web site files 
+      win_dsc:
+        resource_name: file
+        Type: File
+        DestinationPath: C:\inetpub\wwwroot\default.htm
+        Contents: '{{ web1_hostname }}'
+        Force: True
+        Ensure: Present
+
+- hosts: '{{ web2_ip }}'
+  gather_facts: no
+  tasks:
+    - name: Install PowerShell modules
+      win_psmodule:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - xComputerManagement
+        - xNetworking
+
+    - name: Set WinRM service to automatic
+      win_dsc:
+        resource_name: Service
+        Name: WinRM
+        StartupType: Automatic
+
+    - name: Set DNS server address
+      win_dsc:
+        resource_name: xDnsServerAddress
+        AddressFamily: IPV4
+        InterfaceAlias: '{{ interface_alias }}'
+        Address: '{{ web2_dns_servers }}'
+
+    - name: Set hostname
+      win_dsc: 
+        resource_name: xComputer
+        Name: '{{ web2_hostname }}'
+        DomainName: '{{ domain_name }}'
+        Credential_username: '{{ DomainAdministratorCredential_username }}'
+        Credential_password: '{{ DomainAdministratorCredential_password }}'
+      register: SetHostname
+
+    - name: Reboot 1
+      win_reboot:
+      when: SetHostname.reboot_required == True
+
+    - name: Install Windows Features
+      win_feature:
+        name: Web-Server, Web-Mgmt-Console
+        ensure: Present
+
+    - name: Create web site files 
+      win_dsc:
+        resource_name: file
+        Type: File
+        DestinationPath: C:\inetpub\wwwroot\default.htm
+        Contents: '{{ web2_hostname }}'
+        Force: True
+        Ensure: Present
