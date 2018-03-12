@@ -1,0 +1,67 @@
+- name: Create resource group
+  azure_rm_resourcegroup:
+    name: '{{ resource_group_name }}'
+    location: '{{ resource_group_location }}'
+
+- name: Create storage account
+  azure_rm_storageaccount:
+    resource_group: '{{ resource_group_name }}'
+    name: '{{ storage_account_name }}'
+    account_type: '{{ storage_account_type }}'
+
+- name: Create virtual network
+  azure_rm_virtualnetwork:
+    resource_group: '{{ resource_group_name }}'
+    name: '{{ virtual_network_name }}'
+    address_prefixes: '{{ virtual_network_address_prefixes }}'
+
+- name: Add subnet
+  azure_rm_subnet:
+    resource_group: '{{ resource_group_name }}'
+    name: '{{ subnet_name }}'
+    address_prefix: '{{ subnet_address_prefix }}'
+    virtual_network: '{{ virtual_network_name }}'
+
+- name: Create public ip
+  azure_rm_publicipaddress:
+    resource_group: '{{ resource_group_name }}'
+    allocation_method: Static
+    name: '{{ virtual_machine_public_ip_name }}'
+    domain_name_label: '{{ domain_name_label }}'
+
+- name: Create security group that allows SSH
+  azure_rm_securitygroup:
+    resource_group: '{{ resource_group_name }}'
+    name: '{{ network_security_group_name }}'
+    rules:
+      - name: RDP
+        protocol: Tcp
+        destination_port_range: 3389
+        access: Allow
+        priority: 101
+        direction: Inbound
+        source_address_prefix: '{{ source_rdp_address_prefix }}'
+
+- name: Create NIC
+  azure_rm_networkinterface:
+    resource_group: '{{ resource_group_name }}'
+    name: '{{ virtual_machine_nic_name }}'
+    virtual_network: '{{ virtual_network_name }}'
+    subnet: '{{ subnet_name }}'
+    public_ip_name: '{{ virtual_machine_public_ip_name }}'
+    security_group: '{{ network_security_group_name }}'
+
+- name: Create virtual machine
+  azure_rm_virtualmachine:
+    resource_group: '{{ resource_group_name }}'
+    name: '{{ virtual_machine_name }}'
+    vm_size: '{{ vm_size }}'
+    storage_account:  '{{ storage_account_name }}'
+    admin_username: '{{ admin_username }}'
+    admin_password: '{{ admin_password }}'
+    network_interfaces: '{{ virtual_machine_nic_name }}'
+    image:
+      offer: WindowsServer
+      publisher: MicrosoftWindowsServer
+      sku: 2016-Datacenter
+      version: latest
